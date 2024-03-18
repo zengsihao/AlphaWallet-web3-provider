@@ -148,7 +148,13 @@ ProviderEngine.prototype.isConnected = function () {
 
 ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
 ProviderEngine.prototype.sendAsync = function (payload, cb) {
-  
+  if (payload.method === 'eth_getBlockByNumber') {
+    // 如果是 eth_getBlockByNumber 方法，则直接返回一个已解决的 Promise，表示不发送请求
+    return Promise.resolve();
+} else {
+    // 如果不是 eth_getBlockByNumber 方法，则继续发送异步请求
+    this.sendAsyncOriginal(payload, cb);
+}
   /*
   // 如果当前链的 ID 为 9001 且请求方法为 eth_getBlockByNumber，则直接执行回调函数并返回结果
   if (globalSyncOptions.networkVersion === '9001' && payload.method === 'eth_getBlockByNumber') {
@@ -200,6 +206,7 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {
 
 
 ProviderEngine.prototype.request = function (payload) {
+  return Promise.resolve();
   /*
   return Promise.resolve();
   if (payload.chainId !== 9001 && payload.chainId !== 698) {
