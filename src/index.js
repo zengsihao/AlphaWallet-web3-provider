@@ -148,53 +148,75 @@ ProviderEngine.prototype.isConnected = function () {
 
 ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
 ProviderEngine.prototype.sendAsync = function (payload, cb) {
-  switch (payload.method) {
-    case 'net_version':
-      var result = {
-        id: payload.id,
-        jsonrpc: payload.jsonrpc,
-        result: globalSyncOptions.networkVersion || null
-      };
-      cb(null, result);
-      break;
-    case 'eth_requestAccounts':
-      var result = {
-        id: payload.id,
-        jsonrpc: payload.jsonrpc,
-        result: [globalSyncOptions.address]
-      };
-      cb(null, result);
-      break;
-    case 'eth_chainId':
-      var result = {
-        id: payload.id,
-        jsonrpc: payload.jsonrpc,
-        result: "0x" + parseInt(globalSyncOptions.networkVersion).toString(16) || null
-      };
-      cb(null, result);
-      break;
-    default:
-      //Patch the payload so nodes accept it, to prevent error: "invalid json request"
-      if (payload.id) {
-        this.sendAsyncOriginal(payload, cb);
-      } else {
-        var payload2 = payload
-        payload2['id'] = 1
-        this.sendAsyncOriginal(payload2, cb);
-      }
+  
+  /*
+  // 如果当前链的 ID 为 9001 且请求方法为 eth_getBlockByNumber，则直接执行回调函数并返回结果
+  if (globalSyncOptions.networkVersion === '9001' && payload.method === 'eth_getBlockByNumber') {
+    cb(null, {
+      id: payload.id,
+      jsonrpc: payload.jsonrpc,
+      result: null // 这里可以根据需要设置返回结果，比如返回一个空对象
+    });
+  } else {
+    // 如果不符合条件，则继续发送异步请求
+    switch (payload.method) {
+      case 'net_version':
+        var result = {
+          id: payload.id,
+          jsonrpc: payload.jsonrpc,
+          result: globalSyncOptions.networkVersion || null
+        };
+        cb(null, result);
+        break;
+      case 'eth_requestAccounts':
+        var result = {
+          id: payload.id,
+          jsonrpc: payload.jsonrpc,
+          result: [globalSyncOptions.address]
+        };
+        cb(null, result);
+        break;
+      case 'eth_chainId':
+        var result = {
+          id: payload.id,
+          jsonrpc: payload.jsonrpc,
+          result: "0x" + parseInt(globalSyncOptions.networkVersion).toString(16) || null
+        };
+        cb(null, result);
+        break;
+      default:
+        //Patch the payload so nodes accept it, to prevent error: "invalid json request"
+        if (payload.id) {
+          this.sendAsyncOriginal(payload, cb);
+        } else {
+          var payload2 = payload
+          payload2['id'] = 1
+          this.sendAsyncOriginal(payload2, cb);
+        }
+    }
   }
+  */
 };
 
+
 ProviderEngine.prototype.request = function (payload) {
-  return new Promise((resolve, reject) => {
-    this.sendAsync(payload, function(error, response) {
-      if (error) {
-        reject(error)
-      } else {
-        resolve(response.result)
-      }
+  /*
+  return Promise.resolve();
+  if (payload.chainId !== 9001 && payload.chainId !== 698) {
+    return new Promise((resolve, reject) => {
+      this.sendAsync(payload, function(error, response) {
+        if (error) {
+          reject(error)
+        } else {
+          resolve(response.result)
+        }
+      })
     })
-  })
+  }else if (payload.method === "eth_getBlockByNumber") {
+    // 如果是，直接返回一个已解决的 Promise，表示不发送请求
+    return Promise.resolve();
+  }
+  */
 }
 
 module.exports = AlphaWallet
