@@ -40,9 +40,9 @@ const AlphaWallet = {
       }
     }
     if (typeof username === 'undefined' || typeof password === 'undefined') {
-      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
+      // engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl)))
     } else {
-      engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl,0,username,password)))
+      // engine.addProvider(new Web3Subprovider(new Web3.providers.HttpProvider(rpcUrl,0,username,password)))
     }
 
     engine.on('error', err => console.error(err.stack))
@@ -53,6 +53,7 @@ const AlphaWallet = {
 
     return engine
   },
+
   addCallback (id, cb, isRPC) {
     cb.isRPC = isRPC
     callbacks[id] = cb
@@ -82,79 +83,80 @@ const AlphaWallet = {
   }
 }
 
-if (typeof context.AlphaWallet === 'undefined') {
-  context.AlphaWallet = AlphaWallet
-}
+// if (typeof context.AlphaWallet === 'undefined') {
+//   context.AlphaWallet = AlphaWallet
+// }
 
-ProviderEngine.prototype.setHost = function (host) {
-  var length = this._providers.length;
-  this._providers[length - 1].provider.host = host;
-}
+// ProviderEngine.prototype.setHost = function (host) {
+//   var length = this._providers.length;
+//   this._providers[length - 1].provider.host = host;
+// }
 
-ProviderEngine.prototype.send = function (payload) {
-  const self = this
+// ProviderEngine.prototype.send = function (payload) {
+//   const self = this
 
-  let result = null
-  switch (payload.method) {
+//   let result = null
+//   switch (payload.method) {
 
-    case 'eth_accounts':
-      let address = globalSyncOptions.address
-      result = address ? [address] : []
-      break
+//     case 'eth_accounts':
+//       let address = globalSyncOptions.address
+//       result = address ? [address] : []
+//       break
 
-    case 'eth_coinbase':
-      result = globalSyncOptions.address || null
-      break
+//     case 'eth_coinbase':
+//       result = globalSyncOptions.address || null
+//       break
 
-    case 'eth_uninstallFilter':
-      self.sendAsync(payload, noop)
-      result = true
-      break
+//     case 'eth_uninstallFilter':
+//       self.sendAsync(payload, noop)
+//       result = true
+//       break
 
-    case 'net_version':
-      result = globalSyncOptions.networkVersion || null
-      break
+//     case 'net_version':
+//       result = globalSyncOptions.networkVersion || null
+//       break
 
-    case 'net_listening':
-      try {
-        self._providers.filter(p => p.provider !== undefined)[0].provider.send(payload)
-        result = true
-      } catch (e) {
-        result = false
-      }
-      break
+//     case 'net_listening':
+//       try {
+//         self._providers.filter(p => p.provider !== undefined)[0].provider.send(payload)
+//         result = true
+//       } catch (e) {
+//         result = false
+//       }
+//       break
 
-    // throw not-supported Error
-    default:
-      var message = `The AlphaWallet Web3 object does not support synchronous methods like ${payload.method} without a callback parameter.`
-      throw new Error(message)
-  }
-  // return the result
-  return {
-    id: payload.id,
-    jsonrpc: payload.jsonrpc,
-    result: result,
-  }
-}
+//     // throw not-supported Error
+//     default:
+//       var message = `The AlphaWallet Web3 object does not support synchronous methods like ${payload.method} without a callback parameter.`
+//       throw new Error(message)
+//   }
+//   // return the result
+//   return {
+//     id: payload.id,
+//     jsonrpc: payload.jsonrpc,
+//     result: result,
+//   }
+// }
 
-ProviderEngine.prototype.isConnected = function () {
-    return this.send({
-        id: 9999999999,
-        jsonrpc: '2.0',
-        method: 'net_listening',
-        params: []
-    }).result
-}
+// ProviderEngine.prototype.isConnected = function () {
+//     return this.send({
+//         id: 9999999999,
+//         jsonrpc: '2.0',
+//         method: 'net_listening',
+//         params: []
+//     }).result
+// }
 
-ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
-ProviderEngine.prototype.sendAsync = function (payload, cb) {
-  if (payload.method === 'eth_getBlockByNumber') {
-    // 如果是 eth_getBlockByNumber 方法，则直接返回一个已解决的 Promise，表示不发送请求
-    return Promise.resolve();
-} else {
-    // 如果不是 eth_getBlockByNumber 方法，则继续发送异步请求
-    this.sendAsyncOriginal(payload, cb);
-}
+
+// ProviderEngine.prototype.sendAsyncOriginal = ProviderEngine.prototype.sendAsync
+// ProviderEngine.prototype.sendAsync = function (payload, cb) {
+//   if (payload.method === 'eth_getBlockByNumber') {
+//     // 如果是 eth_getBlockByNumber 方法，则直接返回一个已解决的 Promise，表示不发送请求
+//     return;
+// } else {
+//     // 如果不是 eth_getBlockByNumber 方法，则继续发送异步请求
+//     this.sendAsyncOriginal(payload, cb);
+// }
   /*
   // 如果当前链的 ID 为 9001 且请求方法为 eth_getBlockByNumber，则直接执行回调函数并返回结果
   if (globalSyncOptions.networkVersion === '9001' && payload.method === 'eth_getBlockByNumber') {
@@ -202,28 +204,28 @@ ProviderEngine.prototype.sendAsync = function (payload, cb) {
     }
   }
   */
-};
+// };
 
 
-ProviderEngine.prototype.request = function (payload) {
-  return Promise.resolve();
-  /*
-  return Promise.resolve();
-  if (payload.chainId !== 9001 && payload.chainId !== 698) {
-    return new Promise((resolve, reject) => {
-      this.sendAsync(payload, function(error, response) {
-        if (error) {
-          reject(error)
-        } else {
-          resolve(response.result)
-        }
-      })
-    })
-  }else if (payload.method === "eth_getBlockByNumber") {
-    // 如果是，直接返回一个已解决的 Promise，表示不发送请求
-    return Promise.resolve();
-  }
-  */
-}
+// ProviderEngine.prototype.request = function (payload) {
+//   return ;
+//   /*
+//   return Promise.resolve();
+//   if (payload.chainId !== 9001 && payload.chainId !== 698) {
+//     return new Promise((resolve, reject) => {
+//       this.sendAsync(payload, function(error, response) {
+//         if (error) {
+//           reject(error)
+//         } else {
+//           resolve(response.result)
+//         }
+//       })
+//     })
+//   }else if (payload.method === "eth_getBlockByNumber") {
+//     // 如果是，直接返回一个已解决的 Promise，表示不发送请求
+//     return Promise.resolve();
+//   }
+//   */
+// }
 
 module.exports = AlphaWallet
